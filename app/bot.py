@@ -13,6 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from app.config import ADMIN_TELEGRAM_ID, TELEGRAM_BOT_TOKEN, UPLOAD_DIR
 from app.database import async_session
+from app.file_store import save_submission_files
 from app.formatters import format_submission_message
 from app.google_service import google_service
 from app.models import Buyer, Message, MessageSender, Submission, SubmissionStatus
@@ -246,10 +247,15 @@ async def _save_submission(
         submission_id = submission.id
         submission.created_at = submission.created_at or datetime.now(MSK)
 
+        creative_url = doc_url
+        txt_path, json_path = save_submission_files(
+            submission, buyer, creative_url=creative_url
+        )
+
         admin_text = format_submission_message(
             submission,
             buyer,
-            creative_url=doc_url,
+            creative_url=creative_url,
             html=True,
         )
 
@@ -258,7 +264,8 @@ async def _save_submission(
     buyer_response = (
         f"✅ Заявка отправлена!\n"
         f"#{submission_id} — {title}\n"
-        f"Статус: ожидает проверки"
+        f"Статус: ожидает проверки\n"
+        f"📁 Файл: {txt_path.name}"
     )
     if doc_url:
         buyer_response += f"\n\n📄 Google Doc: {doc_url}"

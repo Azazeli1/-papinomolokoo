@@ -46,7 +46,8 @@ async def seed() -> None:
         await session.commit()
         await session.refresh(submission)
 
-        print("=== Уведомление в Telegram (как ты получишь) ===\n")
+        await session.refresh(submission)
+
         print(
             format_submission_message(
                 submission,
@@ -55,6 +56,13 @@ async def seed() -> None:
                 html=False,
             )
         )
+
+        from app.file_store import save_submission_files
+
+        txt_path, json_path = save_submission_files(
+            submission, buyer, creative_url=submission.google_doc_url
+        )
+        print(f"\n📁 Сохранено: {txt_path}\n📁 {json_path}")
         print(f"\n✅ Демо-заявка #{submission.id} создана. Открой http://localhost:8000")
 
 
