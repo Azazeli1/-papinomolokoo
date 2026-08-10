@@ -1,5 +1,6 @@
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -22,6 +23,22 @@ async def init_db() -> None:
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await _migrate_columns(conn)
+
+
+async def _migrate_columns(conn) -> None:
+    """Добавляет новые колонки в существующую БД (SQLite)."""
+    new_columns = [
+        ("submissions", "gft", "VARCHAR(64)"),
+        ("submissions", "submission_type", "VARCHAR(64)"),
+        ("submissions", "domain", "VARCHAR(512)"),
+        ("submissions", "problem", "TEXT"),
+    ]
+    for table, column, col_type in new_columns:
+        try:
+            await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}"))
+        except Exception:
+            pass
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

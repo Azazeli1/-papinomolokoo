@@ -55,8 +55,10 @@ class GoogleService:
         *,
         buyer_name: str,
         buyer_username: str | None,
-        title: str,
-        description: str | None,
+        gft: str,
+        submission_type: str,
+        domain: str,
+        problem: str,
         file_path: str,
         file_name: str,
         submission_id: int,
@@ -69,8 +71,10 @@ class GoogleService:
             doc_id, doc_url = self._create_doc(
                 buyer_name=buyer_name,
                 buyer_username=buyer_username,
-                title=title,
-                description=description,
+                gft=gft,
+                submission_type=submission_type,
+                domain=domain,
+                problem=problem,
                 file_name=file_name,
                 file_id=file_id,
                 submission_id=submission_id,
@@ -102,13 +106,15 @@ class GoogleService:
         *,
         buyer_name: str,
         buyer_username: str | None,
-        title: str,
-        description: str | None,
+        gft: str,
+        submission_type: str,
+        domain: str,
+        problem: str,
         file_name: str,
         file_id: str | None,
         submission_id: int,
     ) -> tuple[str | None, str | None]:
-        doc_metadata: dict = {"title": f"Креатив #{submission_id} — {title}"}
+        doc_metadata: dict = {"title": f"GFT {gft} — {domain} (#{submission_id})"}
         if GOOGLE_DRIVE_FOLDER_ID:
             doc_metadata["parents"] = [GOOGLE_DRIVE_FOLDER_ID]
 
@@ -130,27 +136,20 @@ class GoogleService:
                 "insertText": {
                     "location": {"index": 1},
                     "text": (
-                        f"Заявка на проверку креатива\n"
+                        f"Заявка на проверку\n"
                         f"{'=' * 40}\n\n"
+                        f"GFT: {gft}\n"
+                        f"Тип: {submission_type}\n"
+                        f"Домен: {domain}\n"
+                        f"Проблема: {problem}\n"
                         f"ID заявки: #{submission_id}\n"
                         f"Бюер: {buyer_name} ({username_line})\n"
-                        f"Название: {title}\n"
                         f"Дата: {now}\n"
                         f"Файл: {file_name}\n"
                     ),
                 }
             }
         ]
-
-        if description:
-            requests.append(
-                {
-                    "insertText": {
-                        "location": {"index": 1},
-                        "text": f"Описание: {description}\n\n",
-                    }
-                }
-            )
 
         if creative_link:
             requests.append(

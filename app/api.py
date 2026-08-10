@@ -66,6 +66,30 @@ STATUS_LABELS = {
 }
 
 
+def _submission_to_dict(s: Submission) -> dict:
+    return {
+        "id": s.id,
+        "gft": s.gft,
+        "submission_type": s.submission_type,
+        "domain": s.domain,
+        "problem": s.problem or s.description,
+        "title": s.title,
+        "description": s.description,
+        "file_name": s.file_name,
+        "file_type": s.file_type,
+        "google_doc_url": s.google_doc_url,
+        "status": s.status.value,
+        "status_label": STATUS_LABELS.get(s.status, s.status.value),
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+        "buyer": {
+            "id": s.buyer.id,
+            "name": s.buyer.full_name or "Бюер",
+            "username": s.buyer.username,
+            "telegram_id": s.buyer.telegram_id,
+        },
+    }
+
+
 def _check_auth(request: Request) -> bool:
     return request.cookies.get("admin_auth") == ADMIN_PASSWORD
 
@@ -101,26 +125,7 @@ async def list_submissions(
     )
     submissions = result.scalars().all()
 
-    return [
-        {
-            "id": s.id,
-            "title": s.title,
-            "description": s.description,
-            "file_name": s.file_name,
-            "file_type": s.file_type,
-            "google_doc_url": s.google_doc_url,
-            "status": s.status.value,
-            "status_label": STATUS_LABELS.get(s.status, s.status.value),
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-            "buyer": {
-                "id": s.buyer.id,
-                "name": s.buyer.full_name or "Бюер",
-                "username": s.buyer.username,
-                "telegram_id": s.buyer.telegram_id,
-            },
-        }
-        for s in submissions
-    ]
+    return [_submission_to_dict(s) for s in submissions]
 
 
 @router.get("/api/submissions/{submission_id}")
@@ -140,23 +145,7 @@ async def get_submission(
     if not s:
         raise HTTPException(status_code=404, detail="Not found")
 
-    return {
-        "id": s.id,
-        "title": s.title,
-        "description": s.description,
-        "file_name": s.file_name,
-        "file_type": s.file_type,
-        "google_doc_url": s.google_doc_url,
-        "status": s.status.value,
-        "status_label": STATUS_LABELS.get(s.status, s.status.value),
-        "created_at": s.created_at.isoformat() if s.created_at else None,
-        "buyer": {
-            "id": s.buyer.id,
-            "name": s.buyer.full_name or "Бюер",
-            "username": s.buyer.username,
-            "telegram_id": s.buyer.telegram_id,
-        },
-    }
+    return _submission_to_dict(s)
 
 
 @router.patch("/api/submissions/{submission_id}/status")

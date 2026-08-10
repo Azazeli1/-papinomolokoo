@@ -425,7 +425,7 @@ function renderSubmissionList() {
   el.innerHTML = submissions.map(s => `
     <div class="submission-item ${currentSubmission?.id === s.id ? 'active' : ''}"
          onclick="selectSubmission(${s.id})">
-      <div class="title">#${s.id} — ${esc(s.title)}</div>
+      <div class="title">#${s.id} — GFT ${esc(s.gft || '?')} / ${esc(s.domain || s.title)}</div>
       <div class="meta">
         ${esc(s.buyer.name)}${s.buyer.username ? ' @' + s.buyer.username : ''}
         · <span class="status status-${s.status}">${s.status_label}</span>
@@ -459,20 +459,28 @@ function renderInfo() {
     <div class="detail-card">
       <h2>Заявка #${s.id}</h2>
       <div class="detail-row">
+        <div class="detail-label">GFT</div>
+        <div class="detail-value">${esc(s.gft || '—')}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Тип</div>
+        <div class="detail-value">${esc(s.submission_type || '—')}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Домен</div>
+        <div class="detail-value">${esc(s.domain || '—')}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-label">Проблема</div>
+        <div class="detail-value">${esc(s.problem || s.description || '—')}</div>
+      </div>
+      <div class="detail-row">
         <div class="detail-label">Бюер</div>
-        <div class="detail-value">${esc(s.buyer.name)}${s.buyer.username ? ' (@' + s.buyer.username + ')' : ''}</div>
+        <div class="detail-value">${esc(s.buyer.username || s.buyer.name)} (id: ${s.buyer.telegram_id})</div>
       </div>
       <div class="detail-row">
-        <div class="detail-label">Название</div>
-        <div class="detail-value">${esc(s.title)}</div>
-      </div>
-      <div class="detail-row">
-        <div class="detail-label">Описание</div>
-        <div class="detail-value">${esc(s.description || '—')}</div>
-      </div>
-      <div class="detail-row">
-        <div class="detail-label">Файл</div>
-        <div class="detail-value">${esc(s.file_name)}</div>
+        <div class="detail-label">Креатив</div>
+        <div class="detail-value">${esc(s.file_name || '—')}</div>
       </div>
       <div class="detail-row">
         <div class="detail-label">Google Doc</div>
